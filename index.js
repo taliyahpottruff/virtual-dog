@@ -6,6 +6,10 @@ const commands = [
 	{
 		name: 'speak',
 		description: 'Gets the dog to bark.'
+	},
+	{
+		name: 'check',
+		description: 'Checks the dogs condition.'
 	}
 ];
 
@@ -33,7 +37,44 @@ client.on('interactionCreate', async interaction => {
 
 	if (interaction.commandName === 'speak') {
 		await interaction.reply('Bork!');
+	} else if (interaction.commandName === 'check') {
+		if (dog.dead) {
+			return await interaction.reply('***Your dog is dead... 💀***');
+		}
+
+		if (dog.hunger >= 70) {
+			return await interaction.reply(`*Your dog looks fine.*`);
+		}
+
+		if (dog.hunger >= 50) {
+			return await interaction.reply(`*Your dog looks hungry.*`);
+		}
+
+		if (dog.hunger >= 30) {
+			return await interaction.reply(`*Your dog looks starving...*`);
+		}
+
+		if (dog.hunger >= 10) {
+			return await interaction.reply(`*Please feed your dog...*`);
+		}
+
+		return await interaction.reply('*Your dog is on the brink of death...*');
 	}
 });
+
+let dog = {
+	dead: false,
+	hunger: 100
+};
+
+setInterval(() => {
+	if (!dog.dead) {
+		dog.hunger -= 1;
+
+		if (dog.hunger <= 0) {
+			dog.dead = true;
+		}
+	}
+}, 1000);
   
 client.login(process.env.TOKEN);
