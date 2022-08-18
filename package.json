@@ -1,0 +1,14 @@
+{
+  "name": "virtual-dog",
+  "version": "1.0.0",
+  "description": "A virtual dog bot for Discord.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Taliyah Pottruff",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.2.0"
+  }
+}
