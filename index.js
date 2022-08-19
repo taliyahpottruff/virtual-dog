@@ -52,6 +52,7 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
 		console.log(`Logged in as ${client.user.tag}`);
 	});
 
+	// Command Handler
 	client.on('interactionCreate', async interaction => {
 		if (!interaction.isChatInputCommand()) return;
 
