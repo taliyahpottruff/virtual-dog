@@ -106,23 +106,23 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
 				)]
 			});
 		} else if (interaction.commandName === 'check') {
-			if (dog.dead) {
+			if (dog.vitals.dead) {
 				return await interaction.reply('***Your dog is dead... 💀***');
 			}
 
-			if (dog.hunger >= 70) {
+			if (dog.vitals.hunger >= 70) {
 				return await interaction.reply(`*Your dog looks fine.*`);
 			}
 
-			if (dog.hunger >= 50) {
+			if (dog.vitals.hunger >= 50) {
 				return await interaction.reply(`*Your dog looks hungry.*`);
 			}
 
-			if (dog.hunger >= 30) {
+			if (dog.vitals.hunger >= 30) {
 				return await interaction.reply(`*Your dog looks starving...*`);
 			}
 
-			if (dog.hunger >= 10) {
+			if (dog.vitals.hunger >= 10) {
 				return await interaction.reply(`*Please feed your dog...*`);
 			}
 
@@ -154,7 +154,12 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
 	});
 
 	setInterval(async () => {
-		
+		let dogs = await Dog.find();
+
+		dogs.forEach(dog => {
+			dog.hunger -= 1;
+			dog.save();
+		});
 	}, 1000 * 60 * 60);
   
 	client.login(process.env.TOKEN);
