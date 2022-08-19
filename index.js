@@ -46,7 +46,7 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
 		}
 	})();
 
-	const client = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent]});
+	const client = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildPresences]});
 
 	client.on('ready', () => {
 		console.log(`Logged in as ${client.user.tag}`);
@@ -73,6 +73,11 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
 			});
 			await newDog.save();
 
+			const botUser = await interaction.guild.members.fetchMe();
+			await botUser.edit({
+				nick: dogName
+			});
+
 			return await interaction.reply({ embeds: [new EmbedBuilder()
 				.setTitle(`Congrats! Welcome to the family ${dogName}!`)
 			]});
@@ -92,6 +97,14 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
 
 		if (interaction.commandName === 'speak') {
 			await interaction.reply('Bork!');
+		} else if (interaction.commandName === 'unadopt') {
+			await interaction.reply({
+				embeds: [new EmbedBuilder().setColor('Red').setTitle('Are you sure you want to give up your dog?').setDescription('WARNING: This action can\'t be undone.')],
+				components: [new ActionRowBuilder().addComponents(
+					new ButtonBuilder().setCustomId('unadoptConfirm').setLabel('Yes').setStyle(ButtonStyle.Danger),
+					new ButtonBuilder().setCustomId('unadoptCancel').setLabel('No').setStyle(ButtonStyle.Primary)
+				)]
+			});
 		} else if (interaction.commandName === 'check') {
 			if (dog.dead) {
 				return await interaction.reply('***Your dog is dead... 💀***');
@@ -114,14 +127,6 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
 			}
 
 			return await interaction.reply('*Your dog is on the brink of death...*');
-		} else if (interaction.commandName === 'unadopt') {
-			await interaction.reply({
-				embeds: [new EmbedBuilder().setColor('Red').setTitle('Are you sure you want to give up your dog?').setDescription('WARNING: This action can\'t be undone.')],
-				components: [new ActionRowBuilder().addComponents(
-					new ButtonBuilder().setCustomId('unadoptConfirm').setLabel('Yes').setStyle(ButtonStyle.Danger),
-					new ButtonBuilder().setCustomId('unadoptCancel').setLabel('No').setStyle(ButtonStyle.Primary)
-				)]
-			});
 		}
 	});
 
