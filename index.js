@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const { REST, Routes, Client, GatewayIntentBits, EmbedBuilder, ApplicationCommandOptionType } = require('discord.js');
+const { REST, Routes, Client, GatewayIntentBits, EmbedBuilder, ApplicationCommandOptionType, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const mongoose = require('mongoose');
 const Dog = require('./dog');
 
@@ -18,6 +18,10 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
 					required: true
 				}
 			]
+		},
+		{
+			name: 'unadopt',
+			description: 'We get it... a dog is a lot of responsibility. Removes your dog from the server.'
 		},
 		{
 			name: 'speak',
@@ -55,10 +59,18 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
 
 		if (interaction.commandName === 'adopt') {
 			if (dog) {
-				return await interaction.reply(new Embed('Test'));
+				return await interaction.reply({embeds: [
+					new EmbedBuilder().setTitle('WHOA THERE!').setDescription(`You already have a dog. Don't be greedy. Don't worry all of our dogs find homes 🙂`)
+				]});
 			}
 
 			const dogName = interaction.options.getString('name');
+
+			let newDog = new Dog({
+				server: interaction.guildId,
+				name: dogName
+			});
+			await newDog.save();
 
 			return await interaction.reply({ embeds: [new EmbedBuilder()
 				.setTitle(`Congrats! Welcome to the family ${dogName}!`)
@@ -101,6 +113,32 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
 			}
 
 			return await interaction.reply('*Your dog is on the brink of death...*');
+		} else if (interaction.commandName === 'unadopt') {
+			await interaction.reply({
+				embeds: [new EmbedBuilder().setColor('Red').setTitle('Are you sure you want to give up your dog?').setDescription('WARNING: This action can\'t be undone.')],
+				components: [new ActionRowBuilder().addComponents(
+					new ButtonBuilder().setCustomId('unadoptConfirm').setLabel('Yes').setStyle(ButtonStyle.Danger),
+					new ButtonBuilder().setCustomId('unadoptCancel').setLabel('No').setStyle(ButtonStyle.Primary)
+				)]
+			});
+		}
+	});
+
+	// Button Handler
+	client.on('interactionCreate', async interaction => {
+		if (!interaction.isButton()) return;
+
+		if (interaction.customId === 'unadoptConfirm') {
+			const result = await Dog.deleteOne({ server: interaction.guildId });
+
+			if (result.deletedCount > 0) {
+				await interaction.message.edit({
+					embeds: [new EmbedBuilder().setColor('Red').setTitle('Your dog has been unadopted.')],
+					components: []
+				});
+			}
+		} else if (interaction.customId === 'unadoptCancel') {
+			interaction.message.delete();
 		}
 	});
 
