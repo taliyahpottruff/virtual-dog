@@ -138,6 +138,11 @@ mongoose.connect(process.env.MONGODB_URI).then(() => {
 			const result = await Dog.deleteOne({ server: interaction.guildId });
 
 			if (result.deletedCount > 0) {
+				const botUser = await interaction.guild.members.fetchMe();
+				await botUser.edit({
+					nick: ''
+				});
+
 				await interaction.message.edit({
 					embeds: [new EmbedBuilder().setColor('Red').setTitle('Your dog has been unadopted.')],
 					components: []
